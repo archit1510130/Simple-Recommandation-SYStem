@@ -64,15 +64,31 @@ import base
 ## now create a song recommedation sysytem
 train_data, test_data = train_test_split(movie_df, test_size = 0.20, random_state=0)
 # popularity based recommadation sysytem that means movies that are most num of time watched
-user_id=users[8]
+user_id=users[10]
 #train_data_grouped = train_data.groupby(['movie title']).agg({'user_id': 'count'}).reset_index()
 pm=base.popularity_recommender_py()
 pm.create(train_data,'user_id','movie title')
-print(pm.popularity_recommendations)
-
-# so its the popularity recommendation ....there is o difference b/w any user .
+#print(pm.popularity_recommendations)
 
 
+# so its the popularity recommendation ....there is no difference b/w any user .
+
+
+
+
+# NOW COMES TO THE ITEM SIMILIARITY BASED SYSTEM
+
+im=base.item_similiarity_recommendation()
+#u=train_data[train_data['user_id']==user_id]
+#print(list(u['movie_id'].unique()))
+#print(train_data.head(2))
+
+im.create(train_data,'user_id','movie title')
+l=im.get_user_items(user_id)
+user_songs=[]
+for i in l:
+    user_songs.append(im.get_item_user(i))
+print(user_songs)
 
 
 
