@@ -61,7 +61,7 @@ class item_similiarity_recommendation():
     
     def get_item_user(self,item):
         item_data=self.train_data[self.train_data[self.item_id]==item]
-        item_user=list(item_data[self.user_id].unique())
+        item_user=set(list(item_data[self.user_id].unique()))
         #print(item_user)
         return item_user
     
@@ -70,7 +70,64 @@ class item_similiarity_recommendation():
         return all_items
     
     
-    #def construct_matrix(self,user_songs,all_songs):
+    def construct_matrix(self,user_songs,all_songs):
+        # get users for all songs in user songs
+        user_songs_users=[]
+        for i in user_songs:
+            user_songs_users.append(self.get_item_user(i))
+        # initialize the cooccurence matrix
+        cooccurence_matrix=np.matrix(np.zeros(shape=(len(user_songs),len(all_songs))),float)
+        for i in range(len(all_songs)):
+            song_i_data=self.train_data[self.train_data[self.item_id]==all_songs[i]]
+            users_i=set(song_i_data[self.user_id].unique())
+                
+            for j in range(0,len(user_songs)):
+                # get unique listeners of song j
+                users_j=user_songs_users[j]
+                # calculate intersection of i and j
+                users_intersection=users_i.intersection(users_j)
+                #print(users_intersection)
+                if len(users_intersection)!=0:
+                    users_union=users_i.union(users_j)
+                    add=float(len(users_intersection))/float(len(users_union))
+                    cooccurence_matrix[j,i]=add#float(len(users_intersection))/float(len(users_union))
+                else:
+                    cooccurence_matrix[j,i]=0
+        return cooccurence_matrix 
+
+
+    def make_recommadation(self,user,user_songs,all_songs,cooccurence_matrix):
+        sim_items=cooccurence_matrix.sum(axis=0)/cooccurence_matrix.shape[0]
+        sim_items=np.array(sim_items)[0].tolist()
+        sort_with_indices=[(e,i) for i ,e in enumerate(list(sim_items))]
+        sort_sim_items=sorted(sort_with_indices,reverse=True)
+        #print(sort_sim_items)
+        
+        col=['user_id','song','score','rank']
+        df=pd.DataFrame(columns=col)
+        r=1
+        re=[]
+        le=1
+        for i in range(len(sort_sim_items)):
+            if all_songs[sort_sim_items[i][1]] not in user_songs and r<10:
+                df.loc[le]=[user,all_songs[sort_sim_items[i][1]],sort_sim_items[i][0],r]
+                le=le+1
+                r=r+1
+        return df         
+                   
+                
+    def recommend(self,user):
+        user_songs=self.get_user_items(user)
+        all_songs=self.get_all_items()
+        cooccurence_matrix=self.construct_matrix(user_songs,all_songs)
+        df=self.make_recommadation(user,user_songs,all_songs,cooccurence_matrix)
+        return df
+        
+        
+        #print(cooccurence_matrix)
+        
+                
+                
         
         
     

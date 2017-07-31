@@ -6,7 +6,7 @@ Created on Tue Jul 25 16:43:46 2017
 @author: andha_coder
 """
 import pandas as pd
-
+import numpy as np
 u_cols=['user_id','age','sex','occupation','zip_code']
 User_data=pd.read_csv("./data/u.user",sep='|',names=u_cols,encoding='latin-1')
 # now here all the user data in readble format
@@ -64,7 +64,7 @@ import base
 ## now create a song recommedation sysytem
 train_data, test_data = train_test_split(movie_df, test_size = 0.20, random_state=0)
 # popularity based recommadation sysytem that means movies that are most num of time watched
-user_id=users[10]
+user_id=users[15]
 #train_data_grouped = train_data.groupby(['movie title']).agg({'user_id': 'count'}).reset_index()
 pm=base.popularity_recommender_py()
 pm.create(train_data,'user_id','movie title')
@@ -77,23 +77,13 @@ pm.create(train_data,'user_id','movie title')
 
 
 # NOW COMES TO THE ITEM SIMILIARITY BASED SYSTEM
-
 im=base.item_similiarity_recommendation()
 #u=train_data[train_data['user_id']==user_id]
 #print(list(u['movie_id'].unique()))
 #print(train_data.head(2))
 
 im.create(train_data,'user_id','movie title')
-l=im.get_user_items(user_id)
-user_songs=[]
-for i in l:
-    user_songs.append(im.get_item_user(i))
-print(user_songs)
-
-
-
-
-
+l=im.recommend(user_id)
 
 
 
